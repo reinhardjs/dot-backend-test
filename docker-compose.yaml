@@ -1,0 +1,17 @@
+version: "3.8"
+services:
+  postgres:
+    image: postgres:10.4
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./medusa_pg_db:/var/lib/postgresql/data
+    env_file:
+      - .env
+
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    expose:
+      - 6379
