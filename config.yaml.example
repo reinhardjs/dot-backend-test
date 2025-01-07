@@ -1,0 +1,12 @@
+# Database Configuration
+database:
+  url: "postgres://username:password@localhost:5432/dbname?sslmode=disable"
+
+# Redis Configuration
+redis:
+  url: "redis://localhost:6379/0"
+
+# Server Configuration
+server:
+  address: ":8080"
+  timeout: 30
