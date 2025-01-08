@@ -95,5 +95,13 @@ This project is a backend application built using Go, GORM, and Gin. It provides
 To run the tests, use the following command:
 
 ```
-go test ./test/... -v
+cd test
+```
+
+```
+docker compose up -d
+```
+
+```
+go test ./... -v
 ```
