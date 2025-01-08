@@ -24,8 +24,13 @@ func (h *ProductHandler) CreateProduct(c *gin.Context) {
 		return
 	}
 
+	if product.Name == "" || product.Price < 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid product data: name cannot be empty and price must be non-negative"})
+		return
+	}
+
 	if err := h.usecase.CreateProduct(&product); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 

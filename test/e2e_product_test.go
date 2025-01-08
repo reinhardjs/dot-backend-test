@@ -3,6 +3,7 @@ package test
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -132,6 +133,49 @@ func TestGetAllProducts(t *testing.T) {
 	assert.Equal(t, 2, len(response))
 }
 
+func TestCreateProductWithInvalidData(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	mockProductUsecase := &mockProductUsecase{}
+	mockCategoryUsecase := &mockCategoryUsecase{}
+
+	router := delivery_http.NewRouter(mockProductUsecase, mockCategoryUsecase)
+
+	invalidProduct := map[string]interface{}{
+			"name":  "",
+			"price": -1,
+	}
+	body, _ := json.Marshal(invalidProduct)
+
+	// Set up mock expectation for invalid data
+	mockProductUsecase.On("CreateProduct", mock.AnythingOfType("*entity.Product")).Return(fmt.Errorf("invalid product data"))
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/api/v1/products", bytes.NewBuffer(body))
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestGetNonExistentProduct(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	mockProductUsecase := &mockProductUsecase{}
+	mockCategoryUsecase := &mockCategoryUsecase{}
+
+	router := delivery_http.NewRouter(mockProductUsecase, mockCategoryUsecase)
+
+	// Return nil, error instead of trying to cast nil to *entity.Product
+	mockProductUsecase.On("GetProductByID", uint(999)).Return((*entity.Product)(nil), fmt.Errorf("product not found"))
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/api/v1/products/999", nil)
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusNotFound, w.Code)
+	assert.Contains(t, w.Body.String(), "Product not found")
+}
+
 type mockProductUsecase struct {
 	mock.Mock
 }
@@ -144,6 +188,9 @@ func (m *mockProductUsecase) CreateProduct(product *entity.Product) error {
 
 func (m *mockProductUsecase) GetProductByID(id uint) (*entity.Product, error) {
 	args := m.Called(id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
 	return args.Get(0).(*entity.Product), args.Error(1)
 }
 

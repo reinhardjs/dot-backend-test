@@ -3,6 +3,7 @@ package test
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -127,6 +128,47 @@ func TestGetAllCategories(t *testing.T) {
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(response))
+}
+
+func TestCreateCategoryWithInvalidData(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	mockProductUsecase := &mockProductUsecase{}
+	mockCategoryUsecase := &mockCategoryUsecase{}
+
+	router := delivery_http.NewRouter(mockProductUsecase, mockCategoryUsecase)
+
+	invalidCategory := map[string]interface{}{
+			"name": "",
+	}
+	body, _ := json.Marshal(invalidCategory)
+
+	// Set up mock expectation for invalid data
+	mockCategoryUsecase.On("CreateCategory", mock.AnythingOfType("*entity.Category")).Return(fmt.Errorf("invalid category data"))
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/api/v1/categories", bytes.NewBuffer(body))
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestGetNonExistentCategory(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	mockProductUsecase := &mockProductUsecase{}
+	mockCategoryUsecase := &mockCategoryUsecase{}
+
+	router := delivery_http.NewRouter(mockProductUsecase, mockCategoryUsecase)
+
+	// Set up mock to return nil and error for non-existent category
+	mockCategoryUsecase.On("GetCategoryByID", uint(999)).Return((*entity.Category)(nil), fmt.Errorf("category not found"))
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/api/v1/categories/999", nil)
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusNotFound, w.Code)
 }
 
 type mockCategoryUsecase struct {

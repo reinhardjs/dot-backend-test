@@ -24,8 +24,13 @@ func (h *CategoryHandler) CreateCategory(c *gin.Context) {
 		return
 	}
 
+	if category.Name == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "category name cannot be empty"})
+		return
+	}
+
 	if err := h.usecase.CreateCategory(&category); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
