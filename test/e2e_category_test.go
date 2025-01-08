@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-func TestCreateCategory(t *testing.T) {
+func TestE2ECategories(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	mockCategoryUsecase := &mockCategoryUsecase{}
@@ -23,152 +23,112 @@ func TestCreateCategory(t *testing.T) {
 
 	router := delivery_http.NewRouter(mockProductUsecase, mockCategoryUsecase)
 
-	category := entity.Category{Name: "Test Category"}
-	body, _ := json.Marshal(category)
+	t.Run("Create Category", func(t *testing.T) {
+		category := entity.Category{Name: "Test Category"}
+		body, _ := json.Marshal(category)
 
-	mockCategoryUsecase.On("CreateCategory", mock.AnythingOfType("*entity.Category")).Return(nil)
+		mockCategoryUsecase.On("CreateCategory", mock.AnythingOfType("*entity.Category")).Return(nil)
 
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("POST", "/api/v1/categories", bytes.NewBuffer(body))
-	router.ServeHTTP(w, req)
+		w := httptest.NewRecorder()
+		req, _ := http.NewRequest("POST", "/api/v1/categories", bytes.NewBuffer(body))
+		router.ServeHTTP(w, req)
 
-	assert.Equal(t, http.StatusCreated, w.Code)
+		assert.Equal(t, http.StatusCreated, w.Code)
 
-	var response entity.Category
-	err := json.Unmarshal(w.Body.Bytes(), &response)
-	assert.NoError(t, err)
-	assert.Equal(t, category.Name, response.Name)
-}
+		var response entity.Category
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		assert.NoError(t, err)
+		assert.Equal(t, category.Name, response.Name)
+	})
 
-func TestGetCategory(t *testing.T) {
-	gin.SetMode(gin.TestMode)
+	t.Run("Get Category", func(t *testing.T) {
+		mockCategoryUsecase.On("GetCategoryByID", uint(1)).Return(&entity.Category{ID: 1, Name: "Test Category"}, nil)
 
-	mockCategoryUsecase := &mockCategoryUsecase{}
-	mockProductUsecase := &mockProductUsecase{}
+		w := httptest.NewRecorder()
+		req, _ := http.NewRequest("GET", "/api/v1/categories/1", nil)
+		router.ServeHTTP(w, req)
 
-	router := delivery_http.NewRouter(mockProductUsecase, mockCategoryUsecase)
+		assert.Equal(t, http.StatusOK, w.Code)
 
-	mockCategoryUsecase.On("GetCategoryByID", uint(1)).Return(&entity.Category{ID: 1, Name: "Test Category"}, nil)
+		var response entity.Category
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		assert.NoError(t, err)
+		assert.Equal(t, "Test Category", response.Name)
+	})
 
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/api/v1/categories/1", nil)
-	router.ServeHTTP(w, req)
+	t.Run("Update Category", func(t *testing.T) {
+		category := entity.Category{ID: 1, Name: "Updated Category"}
+		body, _ := json.Marshal(category)
 
-	assert.Equal(t, http.StatusOK, w.Code)
+		mockCategoryUsecase.On("UpdateCategory", mock.AnythingOfType("*entity.Category")).Return(nil)
 
-	var response entity.Category
-	err := json.Unmarshal(w.Body.Bytes(), &response)
-	assert.NoError(t, err)
-	assert.Equal(t, "Test Category", response.Name)
-}
+		w := httptest.NewRecorder()
+		req, _ := http.NewRequest("PUT", "/api/v1/categories/1", bytes.NewBuffer(body))
+		router.ServeHTTP(w, req)
 
-func TestUpdateCategory(t *testing.T) {
-	gin.SetMode(gin.TestMode)
+		assert.Equal(t, http.StatusOK, w.Code)
 
-	mockCategoryUsecase := &mockCategoryUsecase{}
-	mockProductUsecase := &mockProductUsecase{}
+		var response entity.Category
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		assert.NoError(t, err)
+		assert.Equal(t, category.Name, response.Name)
+	})
 
-	router := delivery_http.NewRouter(mockProductUsecase, mockCategoryUsecase)
+	t.Run("Delete Category", func(t *testing.T) {
+		mockCategoryUsecase.On("DeleteCategory", uint(1)).Return(nil)
 
-	category := entity.Category{ID: 1, Name: "Updated Category"}
-	body, _ := json.Marshal(category)
+		w := httptest.NewRecorder()
+		req, _ := http.NewRequest("DELETE", "/api/v1/categories/1", nil)
+		router.ServeHTTP(w, req)
 
-	mockCategoryUsecase.On("UpdateCategory", mock.AnythingOfType("*entity.Category")).Return(nil)
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.JSONEq(t, `{"message": "Category deleted successfully"}`, w.Body.String())
+	})
 
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("PUT", "/api/v1/categories/1", bytes.NewBuffer(body))
-	router.ServeHTTP(w, req)
+	t.Run("Get All Categories", func(t *testing.T) {
+		mockCategoryUsecase.On("GetAllCategories").Return([]entity.Category{
+			{ID: 1, Name: "Test Category 1"},
+			{ID: 2, Name: "Test Category 2"},
+		}, nil)
 
-	assert.Equal(t, http.StatusOK, w.Code)
+		w := httptest.NewRecorder()
+		req, _ := http.NewRequest("GET", "/api/v1/categories", nil)
+		router.ServeHTTP(w, req)
 
-	var response entity.Category
-	err := json.Unmarshal(w.Body.Bytes(), &response)
-	assert.NoError(t, err)
-	assert.Equal(t, category.Name, response.Name)
-}
+		assert.Equal(t, http.StatusOK, w.Code)
 
-func TestDeleteCategory(t *testing.T) {
-	gin.SetMode(gin.TestMode)
+		var response []entity.Category
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		assert.NoError(t, err)
+		assert.Equal(t, 2, len(response))
+	})
 
-	mockCategoryUsecase := &mockCategoryUsecase{}
-	mockProductUsecase := &mockProductUsecase{}
-
-	router := delivery_http.NewRouter(mockProductUsecase, mockCategoryUsecase)
-
-	mockCategoryUsecase.On("DeleteCategory", uint(1)).Return(nil)
-
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("DELETE", "/api/v1/categories/1", nil)
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusOK, w.Code)
-	assert.JSONEq(t, `{"message": "Category deleted successfully"}`, w.Body.String())
-}
-
-func TestGetAllCategories(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-
-	mockCategoryUsecase := &mockCategoryUsecase{}
-	mockProductUsecase := &mockProductUsecase{}
-
-	router := delivery_http.NewRouter(mockProductUsecase, mockCategoryUsecase)
-
-	mockCategoryUsecase.On("GetAllCategories").Return([]entity.Category{
-		{ID: 1, Name: "Test Category 1"},
-		{ID: 2, Name: "Test Category 2"},
-	}, nil)
-
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/api/v1/categories", nil)
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusOK, w.Code)
-
-	var response []entity.Category
-	err := json.Unmarshal(w.Body.Bytes(), &response)
-	assert.NoError(t, err)
-	assert.Equal(t, 2, len(response))
-}
-
-func TestCreateCategoryWithInvalidData(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-
-	mockProductUsecase := &mockProductUsecase{}
-	mockCategoryUsecase := &mockCategoryUsecase{}
-
-	router := delivery_http.NewRouter(mockProductUsecase, mockCategoryUsecase)
-
-	invalidCategory := map[string]interface{}{
+	t.Run("Create Category With Invalid Data", func(t *testing.T) {
+		invalidCategory := map[string]interface{}{
 			"name": "",
-	}
-	body, _ := json.Marshal(invalidCategory)
+		}
+		body, _ := json.Marshal(invalidCategory)
 
-	// Set up mock expectation for invalid data
-	mockCategoryUsecase.On("CreateCategory", mock.AnythingOfType("*entity.Category")).Return(fmt.Errorf("invalid category data"))
+		// Set up mock expectation for invalid data
+		mockCategoryUsecase.On("CreateCategory", mock.AnythingOfType("*entity.Category")).Return(fmt.Errorf("invalid category data"))
 
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("POST", "/api/v1/categories", bytes.NewBuffer(body))
-	router.ServeHTTP(w, req)
+		w := httptest.NewRecorder()
+		req, _ := http.NewRequest("POST", "/api/v1/categories", bytes.NewBuffer(body))
+		router.ServeHTTP(w, req)
 
-	assert.Equal(t, http.StatusBadRequest, w.Code)
-}
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
 
-func TestGetNonExistentCategory(t *testing.T) {
-	gin.SetMode(gin.TestMode)
+	t.Run("Get Non-Existent Category", func(t *testing.T) {
+		// Set up mock to return nil and error for non-existent category
+		mockCategoryUsecase.On("GetCategoryByID", uint(999)).Return((*entity.Category)(nil), fmt.Errorf("category not found"))
 
-	mockProductUsecase := &mockProductUsecase{}
-	mockCategoryUsecase := &mockCategoryUsecase{}
+		w := httptest.NewRecorder()
+		req, _ := http.NewRequest("GET", "/api/v1/categories/999", nil)
+		router.ServeHTTP(w, req)
 
-	router := delivery_http.NewRouter(mockProductUsecase, mockCategoryUsecase)
-
-	// Set up mock to return nil and error for non-existent category
-	mockCategoryUsecase.On("GetCategoryByID", uint(999)).Return((*entity.Category)(nil), fmt.Errorf("category not found"))
-
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/api/v1/categories/999", nil)
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusNotFound, w.Code)
+		assert.Equal(t, http.StatusNotFound, w.Code)
+	})
 }
 
 type mockCategoryUsecase struct {
