@@ -93,3 +93,7 @@ This project is a backend application built using Go, GORM, and Gin. It provides
 ## Running Tests
 
 To run the tests, use the following command:
+
+```
+go test ./test/...
+```
