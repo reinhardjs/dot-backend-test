@@ -41,8 +41,8 @@ func setupTestEnvironment(t *testing.T) *gin.Engine {
     productUsecase := usecase.NewProductUsecase(db, cache)
     categoryUsecase := usecase.NewCategoryUsecase(db, cache.Client)
 
-    // Set gin mode to release for production
-    gin.SetMode(gin.ReleaseMode)
+    // Set gin mode to testing for testing
+    gin.SetMode(gin.TestMode)
 
     return delivery_http.NewRouter(productUsecase, categoryUsecase)
 }
