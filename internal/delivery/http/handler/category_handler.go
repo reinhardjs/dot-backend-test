@@ -60,6 +60,13 @@ func (h *CategoryHandler) UpdateCategory(c *gin.Context) {
 		return
 	}
 
+	// Check if category exists
+	_, err = h.usecase.GetCategoryByID(uint(id))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Category not found"})
+		return
+	}
+
 	var category entity.Category
 	if err := c.ShouldBindJSON(&category); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -79,6 +86,13 @@ func (h *CategoryHandler) DeleteCategory(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid category ID"})
+		return
+	}
+
+	// Check if category exists
+	_, err = h.usecase.GetCategoryByID(uint(id))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Category not found"})
 		return
 	}
 

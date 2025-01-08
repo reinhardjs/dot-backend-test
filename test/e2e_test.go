@@ -123,3 +123,66 @@ func TestProductE2E(t *testing.T) {
     })
 }
 
+func TestCategoryE2E(t *testing.T) {
+    router := setupTestEnvironment(t)
+
+    t.Run("Category CRUD Operations", func(t *testing.T) {
+        // Create Category - Success
+        category := entity.Category{Name: "Test Category"}
+        body, _ := json.Marshal(category)
+        w := httptest.NewRecorder()
+        req, _ := http.NewRequest("POST", "/api/v1/categories", bytes.NewBuffer(body))
+        router.ServeHTTP(w, req)
+        assert.Equal(t, http.StatusCreated, w.Code)
+
+        var createdCategory entity.Category
+        json.Unmarshal(w.Body.Bytes(), &createdCategory)
+        assert.NotZero(t, createdCategory.ID)
+
+        // Create Category - Invalid Data
+        invalidCategory := map[string]interface{}{"name": ""}
+        body, _ = json.Marshal(invalidCategory)
+        w = httptest.NewRecorder()
+        req, _ = http.NewRequest("POST", "/api/v1/categories", bytes.NewBuffer(body))
+        router.ServeHTTP(w, req)
+        assert.Equal(t, http.StatusBadRequest, w.Code)
+
+        // Get Category - Success
+        w = httptest.NewRecorder()
+        req, _ = http.NewRequest("GET", fmt.Sprintf("/api/v1/categories/%d", createdCategory.ID), nil)
+        router.ServeHTTP(w, req)
+        assert.Equal(t, http.StatusOK, w.Code)
+
+        // Get Category - Not Found
+        w = httptest.NewRecorder()
+        req, _ = http.NewRequest("GET", "/api/v1/categories/999", nil)
+        router.ServeHTTP(w, req)
+        assert.Equal(t, http.StatusNotFound, w.Code)
+
+        // Update Category - Success
+        updatedCategory := entity.Category{Name: "Updated Category"}
+        body, _ = json.Marshal(updatedCategory)
+        w = httptest.NewRecorder()
+        req, _ = http.NewRequest("PUT", fmt.Sprintf("/api/v1/categories/%d", createdCategory.ID), bytes.NewBuffer(body))
+        router.ServeHTTP(w, req)
+        assert.Equal(t, http.StatusOK, w.Code)
+
+        // Update Category - Not Found
+        w = httptest.NewRecorder()
+        req, _ = http.NewRequest("PUT", "/api/v1/categories/999", bytes.NewBuffer(body))
+        router.ServeHTTP(w, req)
+        assert.Equal(t, http.StatusNotFound, w.Code)
+
+        // Delete Category - Success
+        w = httptest.NewRecorder()
+        req, _ = http.NewRequest("DELETE", fmt.Sprintf("/api/v1/categories/%d", createdCategory.ID), nil)
+        router.ServeHTTP(w, req)
+        assert.Equal(t, http.StatusOK, w.Code)
+
+        // Delete Category - Not Found
+        w = httptest.NewRecorder()
+        req, _ = http.NewRequest("DELETE", "/api/v1/categories/999", nil)
+        router.ServeHTTP(w, req)
+        assert.Equal(t, http.StatusNotFound, w.Code)
+    })
+}
