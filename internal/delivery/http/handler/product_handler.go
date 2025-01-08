@@ -50,6 +50,14 @@ func (h *ProductHandler) GetProduct(c *gin.Context) {
 
 func (h *ProductHandler) UpdateProduct(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
+	
+	// Check if product exists
+	_, err := h.usecase.GetProductByID(uint(id))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Product not found"})
+		return
+	}
+
 	var product entity.Product
 	if err := c.ShouldBindJSON(&product); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -67,6 +75,14 @@ func (h *ProductHandler) UpdateProduct(c *gin.Context) {
 
 func (h *ProductHandler) DeleteProduct(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
+	
+	// Check if product exists
+	_, err := h.usecase.GetProductByID(uint(id))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Product not found"})
+		return
+	}
+
 	if err := h.usecase.DeleteProduct(uint(id)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
