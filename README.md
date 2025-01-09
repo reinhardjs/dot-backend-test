@@ -38,41 +38,11 @@ This project is a backend application built using Go, GORM, and Gin. It provides
 
 2. Create a `.env` file in the root directory and configure your environment variables as needed.
 
-3. Start the services using Docker Compose:
+3. Start the services and run the application using Docker Compose:
 
    ```bash
-   docker-compose up -d
+   docker-compose up
    ```
-
-4. Run the application:
-
-   ```bash
-   go run cmd/main.go
-   ```
-
-### Building Go Application
-
-To build the Go application, run the following command in the project directory:
-
-```bash
-go build -o main cmd/main.go
-```
-
-### Building Docker Image
-
-To build the Docker image, run the following command in the project directory:
-
-```bash
-docker build -t dot-backend-test .
-```
-
-### Running Docker Container
-
-To run the Docker container, use the following command:
-
-```bash
-docker run -p 8080:8080 dot-backend-test
-```
 
 ### API Endpoints and Example Payloads
 
