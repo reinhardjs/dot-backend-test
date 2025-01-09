@@ -50,6 +50,30 @@ This project is a backend application built using Go, GORM, and Gin. It provides
    go run cmd/main.go
    ```
 
+### Building Go Application
+
+To build the Go application, run the following command in the project directory:
+
+```bash
+go build -o main cmd/main.go
+```
+
+### Building Docker Image
+
+To build the Docker image, run the following command in the project directory:
+
+```bash
+docker build -t dot-backend-test .
+```
+
+### Running Docker Container
+
+To run the Docker container, use the following command:
+
+```bash
+docker run -p 8080:8080 dot-backend-test
+```
+
 ### API Endpoints and Example Payloads
 
 #### Products
