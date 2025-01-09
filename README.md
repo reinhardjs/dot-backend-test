@@ -85,7 +85,7 @@ docker run -p 8080:8080 dot-backend-test
     {
       "name": "Sample Product",
       "price": 29.99,
-      "category_id": 1
+      "categoryid": 1
     }
     ```
   - Response (201 Created):
@@ -94,7 +94,7 @@ docker run -p 8080:8080 dot-backend-test
       "id": 1,
       "name": "Sample Product",
       "price": 29.99,
-      "category_id": 1,
+      "categoryid": 1,
       "created_at": "2024-03-14T12:00:00Z",
       "updated_at": "2024-03-14T12:00:00Z"
     }
@@ -109,7 +109,7 @@ docker run -p 8080:8080 dot-backend-test
         "id": 1,
         "name": "Sample Product",
         "price": 29.99,
-        "category_id": 1,
+        "categoryid": 1,
         "created_at": "2024-03-14T12:00:00Z",
         "updated_at": "2024-03-14T12:00:00Z"
       }
@@ -124,7 +124,7 @@ docker run -p 8080:8080 dot-backend-test
       "id": 1,
       "name": "Sample Product",
       "price": 29.99,
-      "category_id": 1,
+      "categoryid": 1,
       "created_at": "2024-03-14T12:00:00Z",
       "updated_at": "2024-03-14T12:00:00Z"
     }
@@ -137,7 +137,7 @@ docker run -p 8080:8080 dot-backend-test
     {
       "name": "Updated Product",
       "price": 39.99,
-      "category_id": 1
+      "categoryid": 1
     }
     ```
   - Response (200 OK):
@@ -146,7 +146,7 @@ docker run -p 8080:8080 dot-backend-test
       "id": 1,
       "name": "Updated Product",
       "price": 39.99,
-      "category_id": 1,
+      "categoryid": 1,
       "created_at": "2024-03-14T12:00:00Z",
       "updated_at": "2024-03-14T12:30:00Z"
     }
